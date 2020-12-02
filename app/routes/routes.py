@@ -1,5 +1,5 @@
 from app import app, db
-from flask import jsonify, request, Response
+from flask import jsonify, request, Response, abort
 from app.tools import Tools
 from bson import ObjectId
 
@@ -56,7 +56,7 @@ def admin_put():
         name, email, password = dados['name'], dados['email'], dados['password']
     except KeyError:
         return jsonify({'error': 'Dados Inválidos'}), 400
-    if not tools.check_exist_db(email):
+    if not tools.check_exist_db('a',email):
         dicio = {
             'name': dados['name'],
             'email': dados['email'],
@@ -86,7 +86,22 @@ def admin_delete():
     else:
         return jsonify({'error': 'id informado não encontrado'}), 404
 
+@app.route('/login', methods=['post'])
+def login():
+    '''
+    Verificando usuario e senha
+    '''
+    dados = request.form
+    try:
+        email, password = dados['email'], dados['password']
+    except KeyError:
+        return jsonify({'error': 'Dados Inválidos'}), 400
 
+    user = dbAdministradores.find_one({'email': email})
+    if user and tools.check_password_hash(user['password'], password ):
+        return jsonify({'name': user['name'], 'email': user['email']}), 200
+    else:
+        return abort(401)
 
 @app.route('/edicoes', methods=['get'] )
 def edicoes_get():

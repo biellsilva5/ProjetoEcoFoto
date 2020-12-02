@@ -14,10 +14,17 @@ class Tools():
     def check_password_hash(self, pwdHash, pwd):
         return bcrypt.check_password_hash(pwdHash, pwd)
     
-    def check_exist_db(self, id):
-        dados = dbAdministradores.find_one({'_id': ObjectId(id)})
-        if dados:
-            return True
+    def check_exist_db(self, id, email=None):
+        if email:
+            dados = dbAdministradores.find_one({'email': email})
+            if dados:
+                return True
+            else:
+                return False
         else:
-            return False
+            dados = dbAdministradores.find_one({'_id': ObjectId(id)})
+            if dados:
+                return True
+            else:
+                return False
 
