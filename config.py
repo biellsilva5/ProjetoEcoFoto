@@ -1,2 +1,1 @@
-SECRETKEY = '123'
 DEBUG = True 
