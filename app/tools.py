@@ -1,6 +1,8 @@
 from app import bcrypt,db
 from bson import ObjectId
 
+
+
 ## banco de dados, oleções/trabelas ##
 dbAdministradores = db['administradores']
 

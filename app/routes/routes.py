@@ -1,13 +1,18 @@
 from app import app, db
 from flask import jsonify, request, Response, abort
 from app.tools import Tools
+from app.send_mail import send_email
 from bson import ObjectId
+import jwt
+import datetime
+
 
 tools = Tools()
 
 ## banco de dados, criando coleções/trabelas ##
 dbAdministradores = db['administradores']
 dbEdicoes = db['edicoes']
+dbPaginas = db['paginas']
 
 @app.route('/administradores', methods=['GET'])
 def admin_get():
@@ -146,7 +151,7 @@ def edicoes_post():
     updated = dbEdicoes.update_one(dicio, newdict)
 
     if updated.modified_count > 0:
-        return jsonify({'sucess': 'edição atualizado'})
+        return jsonify({'success': 'edição atualizado'})
     else: 
         return jsonify({'error': 'id não encontrado'})
 
@@ -172,7 +177,7 @@ def edicoes_put():
     }
 
     inserted = dbEdicoes.insert_one(dicio)
-    return jsonify({"sucess" : "edição criada"}), 201
+    return jsonify({"success" : "edição criada"}), 201
 
 @app.route('/edicoes', methods=['delete'] )
 def edicoes_delete():
@@ -188,8 +193,35 @@ def edicoes_delete():
 
     deleted = dbEdicoes.delete_one({"_id": ObjectId(id)})
     if deleted.deleted_count > 0:
-        return jsonify({'sucess': 'edição deleta com sucesso'})
+        return jsonify({'success': 'edição deleta com sucesso'})
     else:
         return jsonify({'error': 'id não encontrado'}), 404
+
+@app.route('/pg/sobre')
+def sobre_info():
+    p = dbPaginas.find_one({'_id': 'sobre'})
+
+    return jsonify({
+        'sobre': p['sobre'],
+        'ciclo': p['ciclo'],
+        'acoes': p['acoes']
+    })
+
+@app.route('/admin/esqueci-senha')
+def esqueci_senha():
+    email = request.args.get('email')
+    token = request.args.get('token')
+    if email:
+
+        payload_token = {
+            "email": email,
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=2)
+        }
+        g_token = jwt.encode(payload_token, app.config['SECRET_KEY'], algorithm="HS256")
+        send = send_email([email], g_token)
+        return jsonify({'info': send})
+    elif token:
+        pass
+    return 'oi'
 
 
