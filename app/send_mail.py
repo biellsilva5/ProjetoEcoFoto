@@ -10,11 +10,11 @@ smtp_ssl_host = 'smtp.gmail.com'
 smtp_ssl_port = 465
 
 # username ou email para logar no servidor
-username = '***'
-password = '***'
+username = 'coordenacaodeextensao@eco.ufrj.br'
+password = 'triplex2016'
 
 # enviar 
-from_addr = 'Extensão EcoFoto<***>'
+from_addr = 'Extensão EcoFoto<coordenacaodeextensao@eco.ufrj.br>'
 
 def send_email(rementente:list, token):
     
@@ -39,9 +39,9 @@ def send_email(rementente:list, token):
         <p>Olá!<br>
         Recebemos uma solicitação para redefinir a senha de acesso a sua conta EcoFoto.<br>
         Use o link abaixo para finalizar a alteração:<br>
-        <a href='http://link/recuperar-senha?token="""+token+ """ 'target='_blank'>Alterar senha.</a><br>
+        <a href='http://agora.labnet.nce.ufrj.br/recuperar-senha?token="""+token+ """ 'target='_blank'>Alterar senha.</a><br>
         Caso o link acima não funcione, copie e cole no seu navegador:<br>
-        http://link/recuperar-senha?token="""+ token + """<br>
+        http://agora.labnet.nce.ufrj.br/recuperar-senha?token="""+ token + """<br>
 
         
         

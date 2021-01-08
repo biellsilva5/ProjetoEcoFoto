@@ -221,7 +221,15 @@ def esqueci_senha():
         send = send_email([email], g_token)
         return jsonify({'info': send})
     elif token:
-        pass
-    return 'oi'
+        try:
+            dec = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+        except jwt.exceptions.InvalidSignatureError:
+            return jsonify({'error': 'Assinatura invalida.'})
+        except jwt.exceptions.ExpiredSignatureError:
+            return jsonify({'error': 'Link expirado.'})
+        except jwt.exceptions.DecodeError:
+            return jsonify({'error': 'Token invalido'})
+        
+        return jsonify({'validation': True})
 
 
