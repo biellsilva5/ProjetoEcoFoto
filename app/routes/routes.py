@@ -2,7 +2,7 @@ from app import app, db
 from flask import jsonify, request, Response, abort
 from app.tools import Tools
 from app.send_mail import send_email
-from bson import ObjectId
+from bson import ObjectId, errors
 import jwt
 import datetime
 
@@ -13,6 +13,8 @@ tools = Tools()
 dbAdministradores = db['administradores']
 dbEdicoes = db['edicoes']
 dbPaginas = db['paginas']
+dbParticipantes = db['participantes']
+
 
 @app.route('/administradores', methods=['GET'])
 def admin_get():
@@ -128,7 +130,7 @@ def edicoes_post():
     '''
     dados = request.form
     try:
-        id, name, assets, about, music, start_date, end_date, status = daods['id'], dados['name'], dados['assets'], dados['about'], dados['music'], dados['start_date'], dados['end_date'], dados['status']
+        id, name, assets, about, music, start_date, end_date, status = dados['id'], dados['name'], dados['assets'], dados['about'], dados['music'], dados['start_date'], dados['end_date'], dados['status']
     except:
         return jsonify({'error': 'dados inválidos'}), 400
     
@@ -193,12 +195,106 @@ def edicoes_delete():
 
     deleted = dbEdicoes.delete_one({"_id": ObjectId(id)})
     if deleted.deleted_count > 0:
-        return jsonify({'success': 'edição deleta com sucesso'})
+        return jsonify({'success': 'edição deletada com sucesso'})
     else:
         return jsonify({'error': 'id não encontrado'}), 404
 
-@app.route('/pg/sobre')
-def sobre_info():
+@app.route('/pg/participantes', methods=['get'])
+def participantes_get():
+    '''
+    Consultando participantes do banco de dados
+    '''
+    parti = dbParticipantes.find()
+    participantes = list()
+    for pa in parti:
+        pa['_id'] = str(pa['_id'])
+        participantes.append(pa)
+    return jsonify(list(participantes))
+
+@app.route('/pg/participantes', methods=['put'])
+def participantes_put():
+    '''
+    Adicionando participantes ao banco de dados
+    '''
+
+    dados = request.form
+
+    try:
+        nome, sobre, instagram, edicao = dados['nome'], dados['sobre'], dados['instagram'], dados['edicao']
+    except KeyError:
+        return jsonify({"error": "dados inválidos"}), 400
+    
+    dicio = {
+        'nome': nome,
+        'sobre': sobre,
+        'instagram': instagram,
+        'edicao': edicao
+    }
+
+    inserted = dbParticipantes.insert_one(dicio)
+
+    return jsonify({'sucess': "participante adicionado"}), 201
+
+@app.route('/pg/participantes', methods=['POST'])
+def participantes_post():
+    dados = request.form 
+
+    try:
+        id, nome,sobre, instagram, edicao = dados['id'], dados['nome'], dados['sobre'], dados['instagram'], dados['edicao']
+    except KeyError:
+        return jsonify({"error": "dados inválidos"}), 400
+    try:
+        id = ObjectId(id)
+    except errors.InvalidId:
+        return jsonify({'error': 'id não encontrado'})
+    
+    filtro = {
+        '_id': id
+    }
+
+    newdict = {
+        '$set': {
+            'nome':nome,
+            'sobre':sobre,
+            'instagram': instagram,
+            'edicao': edicao
+        }
+    }
+
+    updated = dbParticipantes.update_one(filtro,newdict)
+    
+    if updated.modified_count > 0:
+        return jsonify({'success': 'participante atualizado'})
+    else: 
+        return jsonify({'error': 'id não encontrado'}), 404
+
+@app.route('/pg/participantes', methods=['delete'])
+def participantes_delete():
+    dados = request.form
+
+    try:
+        id = dados['id']
+    except KeyError:
+        return jsonify({"error": "dados inválidos"}), 400
+    try:
+        id = ObjectId(id)
+    except errors.InvalidId:
+        return jsonify({'error': 'id não encontrado'})
+    
+
+    deleted = dbParticipantes.delete_one({'_id': id})
+
+    if deleted.deleted_count > 0:
+        return jsonify({'success': 'participante deletado com sucesso'})
+    else:
+        return jsonify({'error': 'id não encontrado'}), 404
+
+
+@app.route('/pg/sobre', methods=['GET'])
+def sobre_info_get():
+    '''
+    Buscar informações da pagina sobre
+    '''
     p = dbPaginas.find_one({'_id': 'sobre'})
 
     return jsonify({
@@ -206,6 +302,35 @@ def sobre_info():
         'ciclo': p['ciclo'],
         'acoes': p['acoes']
     })
+@app.route('/pg/sobre', methods=['POST'])
+def sobre_info_post():
+    '''
+    Atualizar informações da pagina sobre
+    '''
+    dados = request.form
+    try:
+        sobre, ciclo, acoes = dados['sobre'], dados['ciclo'], dados['acoes']
+    except KeyError:
+        return jsonify({'error': 'dados inválidos'}),400
+    
+    di = {
+        'id': 'sobre'
+    }
+    new = {
+        "$set": {
+            'sobre': sobre,
+            'ciclo': ciclo,
+            'acoes': acoes
+        }
+    }
+
+    updated = dbPaginas.update_one(di, new)
+
+    if updated.modified_count > 0:
+        return jsonify({'success': 'atualizado'})
+    else: 
+        return jsonify({'error': 'erro interno'})
+
 
 @app.route('/admin/esqueci-senha')
 def esqueci_senha():
@@ -215,7 +340,7 @@ def esqueci_senha():
 
         payload_token = {
             "email": email,
-            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=2)
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
         }
         g_token = jwt.encode(payload_token, app.config['SECRET_KEY'], algorithm="HS256")
         send = send_email([email], g_token)
@@ -231,5 +356,6 @@ def esqueci_senha():
             return jsonify({'error': 'Token invalido'})
         
         return jsonify({'validation': True})
+    return abort(404)
 
 

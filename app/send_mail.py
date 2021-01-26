@@ -10,11 +10,11 @@ smtp_ssl_host = 'smtp.gmail.com'
 smtp_ssl_port = 465
 
 # username ou email para logar no servidor
-username = 'coordenacaodeextensao@eco.ufrj.br'
-password = 'triplex2016'
+username = 'camila.medina@eco.ufrj.br'
+password = 'excel49842460'
 
 # enviar 
-from_addr = 'Extensão EcoFoto<coordenacaodeextensao@eco.ufrj.br>'
+from_addr = 'Extensão EcoFoto<camila.medina@eco.ufrj.br>'
 
 def send_email(rementente:list, token):
     
