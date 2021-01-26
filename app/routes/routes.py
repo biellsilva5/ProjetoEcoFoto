@@ -33,7 +33,7 @@ def admin_post():
     '''
     Atualizar dados de um usuario especifico no banco de dados
     '''
-    dados = request.form 
+    dados = request.json 
     try:
         name, email = dados['name'], dados['email']
     except KeyError:
@@ -58,7 +58,7 @@ def admin_put():
     '''
         Criando usuario no banco de dados administradores
     '''
-    dados = request.form
+    dados = request.json
     try:# Válidação dos dados
         name, email, password = dados['name'], dados['email'], dados['password']
     except KeyError:
@@ -81,7 +81,7 @@ def admin_delete():
     '''
     Apagando um usuario do banco de dados administradores
     '''
-    dados = request.form    
+    dados = request.json    
     try:
         id = dados['id']
     except KeyError:
@@ -98,7 +98,7 @@ def login():
     '''
     Verificando usuario e senha
     '''
-    dados = request.form
+    dados = request.json
     try:
         email, password = dados['email'], dados['password']
     except KeyError:
@@ -128,7 +128,7 @@ def edicoes_post():
     '''
     Editar edições no banco de dados
     '''
-    dados = request.form
+    dados = request.json
     try:
         id, name, assets, about, music, start_date, end_date, status = dados['id'], dados['name'], dados['assets'], dados['about'], dados['music'], dados['start_date'], dados['end_date'], dados['status']
     except:
@@ -162,7 +162,7 @@ def edicoes_put():
     '''
     Criando edição no banco de dados
     '''
-    dados = request.form
+    dados = request.json
     try:
         name, assets, about, music, start_date, end_date, status = dados['name'], dados['assets'], dados['about'], dados['music'], dados['start_date'], dados['end_date'], dados['status']
     except KeyError:
@@ -186,7 +186,7 @@ def edicoes_delete():
     '''
     Removendo edições no banco de daods
     '''
-    dados = request.form
+    dados = request.json
 
     try:
         id = dados['id']
@@ -217,7 +217,7 @@ def participantes_put():
     Adicionando participantes ao banco de dados
     '''
 
-    dados = request.form
+    dados = request.json
 
     try:
         nome, sobre, instagram, edicao = dados['nome'], dados['sobre'], dados['instagram'], dados['edicao']
@@ -237,7 +237,7 @@ def participantes_put():
 
 @app.route('/pg/participantes', methods=['POST'])
 def participantes_post():
-    dados = request.form 
+    dados = request.json 
 
     try:
         id, nome,sobre, instagram, edicao = dados['id'], dados['nome'], dados['sobre'], dados['instagram'], dados['edicao']
@@ -270,7 +270,7 @@ def participantes_post():
 
 @app.route('/pg/participantes', methods=['delete'])
 def participantes_delete():
-    dados = request.form
+    dados = request.json
 
     try:
         id = dados['id']
@@ -306,7 +306,7 @@ def sobre_info_post():
     '''
     Atualizar informações da pagina sobre
     '''
-    dados = request.form
+    dados = request.json
     try:
         sobre, ciclo, acoes = dados['sobre'], dados['ciclo'], dados['acoes']
     except KeyError:
