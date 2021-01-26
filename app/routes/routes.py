@@ -14,6 +14,7 @@ dbAdministradores = db['administradores']
 dbEdicoes = db['edicoes']
 dbPaginas = db['paginas']
 dbParticipantes = db['participantes']
+dbFotos = db['fotos']
 
 
 @app.route('/administradores', methods=['GET'])
@@ -199,6 +200,97 @@ def edicoes_delete():
     else:
         return jsonify({'error': 'id não encontrado'}), 404
 
+@app.route('/fotos', methods=['get'])
+def fotos_get():
+    '''
+    Consultados fotos do banco de dados
+    '''
+    participante_id = request.args.get('participante_id', None)
+    edicao = request.args.get('edicao', None)
+    if participante_id:
+        fo = dbFotos.find({'participante_id': participante_id})
+        fotos = list()
+        
+        for foto in fo:
+            foto['_id'] = str(foto['_id'])
+            fotos.append(foto)
+    
+        return jsonify(fotos)
+    elif edicao:
+        fo = dbFotos.find({'edicao': int(edicao)})
+        fotos = list()
+        
+        for foto in fo:
+            foto['_id'] = str(foto['_id'])
+            fotos.append(foto)
+    
+        return jsonify(fotos)
+
+    fo = dbFotos.find()
+    fotos = list()
+
+    for foto in fo:
+        foto['_id'] = str(foto['_id'])
+        fotos.append(foto)
+    return jsonify(fotos)
+
+@app.route('/fotos', methods=['put'])
+def fotos_put():
+    '''
+    Adicionando fotos ao banco de dados
+    '''
+
+    dados = request.json
+
+    try:
+        foto, subtitle, participante_id = dados['foto'], dados['subtitle'], dados['participante_id']
+    except KeyError:
+        return jsonify({'error': 'dados inválidos'}), 400
+    try:
+        participante = dbParticipantes.find_one({'_id': ObjectId(participante_id)})
+    except:
+        return jsonify({'error': 'error interno'}), 500
+
+    if not participante:
+        return jsonify({'error': 'participante_id nao encontrado'}), 404
+
+
+    dicio = {
+        'foto': foto,
+        'subtitle': subtitle,
+        'participante_id': participante_id,
+        'participante_nome': participante['nome'],
+        'edicao': int(participante['edicao'])
+    }
+
+    inserted = dbFotos.insert_one(dicio)
+
+    return jsonify({'sucess': 'foto cadastrada'}), 201
+
+@app.route('/fotos', methods=['delete'])
+def fotos_post():
+    '''
+    Apagando foto no banco de dados
+    '''
+    dados = request.json
+
+    try:
+        id = dados['id']
+    except KeyError:
+        return jsonify({'error': 'dados invalidos'}), 400
+
+    try:
+        id = ObjectId(id)
+    except:
+        return jsonify({'error': 'erro interno'}), 500
+
+    deleted = dbFotos.delete_one({'_id': id})
+
+    if deleted.deleted_count > 0:
+        return jsonify({'success': 'participante deletado com sucesso'})
+    else:
+        return jsonify({'error': 'id não encontrado'}), 404
+
 @app.route('/pg/participantes', methods=['get'])
 def participantes_get():
     '''
@@ -209,7 +301,7 @@ def participantes_get():
     for pa in parti:
         pa['_id'] = str(pa['_id'])
         participantes.append(pa)
-    return jsonify(list(participantes))
+    return jsonify(participantes)
 
 @app.route('/pg/participantes', methods=['put'])
 def participantes_put():
