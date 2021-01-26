@@ -296,7 +296,6 @@ def sobre_info_get():
     Buscar informações da pagina sobre
     '''
     p = dbPaginas.find_one({'_id': 'sobre'})
-
     return jsonify({
         'sobre': p['sobre'],
         'ciclo': p['ciclo'],
@@ -324,7 +323,7 @@ def sobre_info_post():
         }
     }
 
-    updated = dbPaginas.update_one(di, new)
+    updated = dbPaginas.update_one(di, new, upsert=True)
 
     if updated.modified_count > 0:
         return jsonify({'success': 'atualizado'})
