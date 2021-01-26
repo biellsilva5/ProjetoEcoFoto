@@ -313,7 +313,7 @@ def sobre_info_post():
         return jsonify({'error': 'dados inválidos'}),400
     
     di = {
-        'id': 'sobre'
+        '_id': 'sobre'
     }
     new = {
         "$set": {
